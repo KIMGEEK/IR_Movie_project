@@ -25,8 +25,11 @@ def train_svd(train_matrix, K=50, lr=0.007, reg=0.02, epochs=20):
     bu = np.zeros(n_users)
     bi = np.zeros(n_items)
     rows, cols = train_matrix.nonzero()
+    idx = np.arange(len(rows))
     for _ in range(epochs):
-        for u, i in zip(rows, cols):
+        np.random.shuffle(idx) # 매 에폭마다 셔플
+        for k in idx:
+            u, i = rows[k], cols[k]
             r_ui = train_matrix[u, i]
             pred = global_mean + bu[u] + bi[i] + P[u].dot(Q[i])
             err  = r_ui - pred
@@ -39,7 +42,8 @@ def train_svd(train_matrix, K=50, lr=0.007, reg=0.02, epochs=20):
 # 예측 및 RMSE 계산
 def predict(u, i, model):
     mu, bu, bi, P, Q = model
-    return mu + bu[u] + bi[i] + P[u].dot(Q[i])
+    est = mu + bu[u] + bi[i] + P[u].dot(Q[i])
+    return np.clip(est, 1.0, 5.0) # 예측값을 1~5로 클리핑
 
 def rmse(test_df, model):
     se = 0.0; n = 0
