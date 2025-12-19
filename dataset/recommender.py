@@ -63,7 +63,7 @@ def main(train_path: str, test_path: str) -> None:
     train_matrix = create_matrix(train_df, n_users, n_items)
     model = train_svd(train_matrix, K=50, lr=0.005, reg=0.02, epochs=30)
     rmse_value = rmse(test_df, model)
-    base_name = os.path.base(train_path)
+    base_name = os.path.basename(train_path)
     output_file = f"{base_name}_prediction.txt"
     with open(output_file, 'w') as f:
         for _, row in test_df.iterrows():
