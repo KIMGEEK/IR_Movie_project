@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import sys
 
 # 데이터 로드 (탭 구분)
 def load_data(path):
@@ -53,11 +54,20 @@ def rmse(test_df, model):
         se += (r - est)**2; n += 1
     return np.sqrt(se / n)
 
-# 예시 사용
-train_df = load_data('u1.base')
-test_df  = load_data('u1.test')
-n_users = max(train_df.user.max(), test_df.user.max()) + 1
-n_items = max(train_df.item.max(), test_df.item.max()) + 1
-train_matrix = create_matrix(train_df, n_users, n_items)
-model = train_svd(train_matrix, K=50, lr=0.005, reg=0.02, epochs=30)
-print("Fold1 RMSE:", rmse(test_df, model))
+def main(train_path: str, test_path: str) -> None:
+    train_df = load_data(train_path)
+    test_df = load_data(test_path)
+    n_users = max(train_df.user.max(), test_df.user.max()) + 1
+    n_items = max(train_df.item.max(), test_df.item.max()) + 1
+    train_matrix = create_matrix(train_df, n_users, n_items)
+    model = train_svd(train_matrix, K=50, lr=0.005, reg=0.02, epochs=30)
+    print("RMSE:", rmse(test_df, model))
+
+if __name__ == '__main__':
+    # Expect exactly two command-line arguments: training and test file names.
+    # sys.argv[0] is the script name, so we check for length 3.
+    if len(sys.argv) != 3:
+        print("Usage: python recommender.py <train_file> <test_file>")
+        sys.exit(1)
+    _, train_file, test_file = sys.argv
+    main(train_file, test_file)
