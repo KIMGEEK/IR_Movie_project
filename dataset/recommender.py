@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import sys
+import os
 
 # 데이터 로드 (탭 구분)
 def load_data(path):
@@ -61,7 +62,19 @@ def main(train_path: str, test_path: str) -> None:
     n_items = max(train_df.item.max(), test_df.item.max()) + 1
     train_matrix = create_matrix(train_df, n_users, n_items)
     model = train_svd(train_matrix, K=50, lr=0.005, reg=0.02, epochs=30)
-    print("RMSE:", rmse(test_df, model))
+    rmse_value = rmse(test_df, model)
+    base_name = os.path.base(train_path)
+    output_file = f"{base_name}_prediction.txt"
+    with open(output_file, 'w') as f:
+        for _, row in test_df.iterrows():
+            u_idx = int(row['user'])
+            i_idx = int(row['item'])
+            pre_rating = predict(u_idx, i_idx, model)
+            original_user = u_idx + 1
+            original_item = i_idx + 1
+            f.write(f"{original_user}\t{original_item}\t{pre_rating:.5f}\n")
+
+    print(f"RMSE:{rmse_value:.6f}")
 
 if __name__ == '__main__':
     # Expect exactly two command-line arguments: training and test file names.
